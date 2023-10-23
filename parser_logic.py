@@ -108,7 +108,7 @@ class Parser(QMainWindow):
     @staticmethod
     def get_images_from_pdf(file_path):
         print(f"Getting images from PDF file at: {file_path}")
-        poppler_path = r"C:\Program Files\poppler-23.08.0\Library\bin"
+        poppler_path = r"poppler-23.08.0\Library\bin"
         return convert_from_path(file_path, dpi=1000, poppler_path=poppler_path)
 
     def extract_course_relations(self):

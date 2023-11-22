@@ -18,6 +18,7 @@ def getCredits():
         result[row[0]] = row[1]
     return result
 
+
 def getSemester():
     semester_from_db = fetch_table_data('COURSE_SEMESTER')[1]
     result = {}
@@ -47,18 +48,10 @@ def getPrerequisites():
 
 
 semester = getSemester()
-
-
 courses = getCourses()
 prerequisitesCourses = getPrerequisites()
 credits = getCredits()
-
-
-coursesNeeded = ["CPSC 3165", "CPSC 4000", "CPSC 3121", "CPSC 3131", "CPSC 5115", "CPSC 5135", "CPSC 5128",
-                 "CPSC 5155", "CPSC 5157", "CPSC 4175", "CPSC 4176", "CPSC 3XXX1",
-                 "CPSC 3XXX2",
-                 "CYBR 2159", "CPSC 2108", "CPSC 1301K"]
-
+coursesNeeded = ["CPSC 3165", "CPSC 4000", "CPSC 3121", "CPSC 3131", "CPSC 5115", "CPSC 5135", "CPSC 5128", "CPSC 5155", "CPSC 5157", "CPSC 4175", "CPSC 4176", "CPSC 3XXX1", "CPSC 3XXX2", "CYBR 2159", "CPSC 2108", "CPSC 1301K"]
 
 # semester = {
 #     "MATH 1113": ["Fa", "Sp", "Su"],

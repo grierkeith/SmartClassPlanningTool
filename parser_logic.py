@@ -65,14 +65,40 @@ class Parser(QMainWindow):
         courses_needed_end = text.find("Another Section Name", courses_needed_start)
         courses_needed_text = text[courses_needed_start + len("Still needed:"): courses_needed_end]
 
+        required_courses = [
+            "CPSC 3165", "CPSC 4000", "CPSC 3121", "CPSC 3131", "CPSC 5115",
+            "CPSC 5135", "CPSC 5128", "CPSC 5155", "CPSC 5157", "CPSC 4175",
+            "CPSC 4176", "CPSC 3XXX1", "CPSC 3XXX2", "CYBR 2159", "CPSC 2108",
+            "CPSC 1301K"
+        ]
+
+        def is_course_required(course):
+            return any(course.startswith(rc) for rc in required_courses)
+
+        def format_course(course):
+            if course.endswith("U"):
+                course = course[:-1]  # Remove the last character 'U'
+            if course == "CPSC 3XXX":
+                return ["CPSC 3XXX1", "CPSC 3XXX2"]
+            return [course]
+
         explicit_matches = re.findall(r'in ([A-Z]+)\s(\d{4}[A-Z]?)', courses_needed_text)
         for prefix, course in explicit_matches:
-            self.courses_needed.append(f"{prefix} {course}")
+            formatted_courses = format_course(f"{prefix} {course}")
+            for fc in formatted_courses:
+                if is_course_required(fc):
+                    self.courses_needed.append(fc)
 
         compound_matches = re.findall(r'in ([A-Z]+)\s(\d{4}[A-Z]?)[*]\sor\s(\d{4}[A-Z]?)[*]', courses_needed_text)
         for prefix, first_course, second_course in compound_matches:
-            self.courses_needed.append(f"{prefix} {first_course}")
-            self.courses_needed.append(f"{prefix} {second_course}")
+            formatted_first_course = format_course(f"{prefix} {first_course}")
+            formatted_second_course = format_course(f"{prefix} {second_course}")
+            for fc in formatted_first_course:
+                if is_course_required(fc):
+                    self.courses_needed.append(fc)
+            for sc in formatted_second_course:
+                if is_course_required(sc):
+                    self.courses_needed.append(sc)
 
         wildcard_matches = re.findall(r'([A-Z]+)?\s*(\d)@', courses_needed_text)
         last_prefix = None
@@ -80,18 +106,25 @@ class Parser(QMainWindow):
             if prefix:
                 last_prefix = prefix
             if last_prefix:
-                course = f"{last_prefix} {num}XXX"
-                self.courses_needed.append(course)
+                formatted_course = format_course(f"{last_prefix} {num}XXX")
+                for fc in formatted_course:
+                    if is_course_required(fc):
+                        self.courses_needed.append(fc)
 
         additional_matches = re.findall(r'([A-Z]+) (\d{4}[A-Z]?)[*]', courses_needed_text)
         for prefix, course_code in additional_matches:
-            self.courses_needed.append(f"{prefix} {course_code}")
+            formatted_course = format_course(f"{prefix} {course_code}")
+            for fc in formatted_course:
+                if is_course_required(fc):
+                    self.courses_needed.append(fc)
 
         self.write_to_db()
 
     def write_to_db(self):
         print("Writing to database...")
-        conn = sqlite3.connect('courses.db')
+        db_path = "courses.db"
+        print(f"Constructed database path: {db_path}")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
         cursor.execute('DROP TABLE IF EXISTS COURSES_NEEDED')
@@ -108,7 +141,7 @@ class Parser(QMainWindow):
     @staticmethod
     def get_images_from_pdf(file_path):
         print(f"Getting images from PDF file at: {file_path}")
-        poppler_path = r"poppler-23.08.0\Library\bin"
+        poppler_path = r'poppler-23.08.0\Library\bin'
         return convert_from_path(file_path, dpi=1000, poppler_path=poppler_path)
 
     def extract_course_relations(self):

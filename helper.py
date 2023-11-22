@@ -276,3 +276,28 @@ def exportSuggestedProgramToExcelFile(program):
         df_courses.to_excel(writer, startrow=2, startcol=7,
                             sheet_name=f"Sheet1", header=True, index=False)
 
+
+def check_suggested_plan(courses_needed, plan):
+    # check pre-requisite issue:
+    print("----Check pre-requisite issue in plan-------")
+    courses_needed = list(courses_needed)
+
+    def get_course_code(name):
+        code = name.split(" - ")[0]
+        return code[:4] + code[5:]
+
+    for semester in plan:
+        for course in semester:
+            code = get_course_code(course.get("name"))
+            prerequisites = prerequisitesCourses.get(code)
+            if prerequisites is None:
+                continue
+            else:
+                for j in prerequisites:
+                    if j in courses_needed:
+                        print("There is issue with pre-requisite courses in plan")
+                        return False
+                    else:
+                        courses_needed.remove(j)
+    print("There is no pre-requisite issue in plan")
+    return True
